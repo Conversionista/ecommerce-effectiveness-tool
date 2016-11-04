@@ -39,5 +39,9 @@
         "single"
       ]
     }
+  },
+  "dependencies": {
+    "d3-funnel": "^1.0.0",
+    "q": "^1.4.1"
   }
 }
