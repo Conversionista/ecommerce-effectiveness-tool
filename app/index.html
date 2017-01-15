@@ -5,12 +5,12 @@
 		<meta name="description" content="">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 
-		<title>hannah funnel</title>
+		<title>Ecommerce effectiveness tool</title>
 
 		<!--<link rel="apple-touch-icon" href="apple-touch-icon.png">-->
-		<link rel="icon" type="image/png" href="favicon-16x16.png" sizes="16x16" />
+		<!-- <link rel="icon" type="image/png" href="favicon-16x16.png" sizes="16x16" />
 		<link rel="icon" href="favicon.ico" type="image/x-icon"/ >
-		<link rel="icon" type="image/png" href="favicon-16x16.png">
+		<link rel="icon" type="image/png" href="favicon-16x16.png"> -->
 		<link rel="stylesheet" href="https://mode.github.io/alamode/alamode.min.css">
 
 		<!-- Place favicon.ico in the root directory -->
@@ -25,7 +25,6 @@
 		<!-- build:css styles/main.css -->
 		<link rel="stylesheet" href="styles/main.css">
 		<!-- endbuild -->
-	
 	</head>
 	<body>
 		<button id="auth-button">Authorize</button>
@@ -41,9 +40,9 @@
 					</button>
 					<div class="navbar-header">
 						<a class="navbar-brand" href="https://conversionista.se/" target="_blank">
-							<img id="c-logo-small" src="/images/c-logo-small.png" alt="C logo">
+							<img id="c-logo-small" src="images/c-logo-small.png" alt="C logo">
 						</a>
-						<span class="navbar-brand">Ecommerce funnel <small>– Beta – <i>0.1</i></small></span>
+						<span class="navbar-brand">Ecommerce funnel <small>– Beta – <i>1.0</i></small></span>
 					</div>
 				</div><!-- /navbar-header -->
 				<!-- Collect the nav links, forms, and other content for toggling -->
@@ -114,79 +113,87 @@
 					</div>
 				</div>
 			</div>
-			<div id="canvas" class="row">
-				<div class="col-xs-12 col-sm-3 col-sm-offset-1">
-					<span class="metric">Stay on site: <span id="engagement-mobile" class="visible-xs-inline"></span></span><br>
-					<span class="metric">Find products: <span id="find-mobile" class="visible-xs-inline"></span></span><br>
-					<span class="metric">Add to cart: <span id="effectiveness-mobile" class="visible-xs-inline"></span></span><br>
-					<span class="metric">Begin checkout: <span id="checkout-mobile" class="visible-xs-inline"></span></span><br>
-					<span class="metric">Complete checkout: <span id="transition-mobile" class="visible-xs-inline"></span></span><br>
-				</div>
-				<div class="col-hidden-xs col-sm-4">
-					<div id="funnel"></div>
-				</div>
-				<div class="col-sm-3 hidden-xs">
-					<img id="click-blocks" src="/images/click-blocks.png" alt="Click blocks for more info">
-				</div>
-			</div>
-			<div class="row">
-				<div id="comparison-date">
-					<div class="col-xs-12 col-sm-6">
-						<span class="glyphicon glyphicon-calendar btn-lg" aria-hidden="true"></span>
-							<span>Add comparison period:</span>
-						</div>
-					<div class="col-xs-12 col-sm-6">
-						<form>
-							<input class="form-control" id="comparison-range" type="text" name="daterange" value="">
-							<!-- <input class="btn btn-default btn-xs" type="submit" value="Submit"> -->
-						</form>
+			<div id="canvas" class="hidden">
+				<div class="row">
+					<div class="col-xs-12 col-sm-3 col-sm-offset-1">
+						<span class="metric">Stay on site: <span id="engagement-mobile" class="visible-xs-inline"></span></span><br>
+						<span class="metric">Find products: <span id="find-mobile" class="visible-xs-inline"></span></span><br>
+						<span class="metric">Add to cart: <span id="effectiveness-mobile" class="visible-xs-inline"></span></span><br>
+						<span class="metric">Begin checkout: <span id="checkout-mobile" class="visible-xs-inline"></span></span><br>
+						<span class="metric">Complete checkout: <span id="transition-mobile" class="visible-xs-inline"></span></span><br>
+					</div>
+					<div class="col-hidden-xs col-sm-4">
+						<div id="funnel"></div>
+					</div>
+					<div class="col-sm-3 hidden-xs">
+						<img id="click-blocks" src="images/click-blocks.png" alt="Click blocks for more info">
 					</div>
 				</div>
-			</div>
-			<div class="row">
-				<div class="col-xs-12">
-					<table class="table">
-						<thead>
-							<tr>
-								<th>Status</th>
-								<th id="th-comparison" class="hidden">Comparison</th>
-								<th>Result</th>
-								<th id="th-trend" class="hidden">Trend</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr>
-								<td>Engagement</td>
-								<td id="engagement-comparison" class="hidden"></td>
-								<td id="engagement-result"></td>
-								<td id="engagement-trend" class="hidden"></td>
-							</tr>
-							<tr>
-								<td>Find rate</td>
-								<td id="find-comparison" class="hidden"></td>
-								<td id="find-result"></td>
-								<td id="find-trend" class="hidden"></td>
-							</tr>
-							<tr>
-								<td>Add to cart</td>
-								<td id="effectiveness-comparison" class="hidden"></td>
-								<td id="effectiveness-result"></td>
-								<td id="effectiveness-trend" class="hidden"></td>
-							</tr>
-							<tr>
-								<td>Begin Checkout</td>
-								<td id="begin-checkout-comparison" class="hidden"></td>
-								<td id="begin-checkout-result"></td>
-								<td id="begin-checkout-trend" class="hidden"></td>
-							</tr>
-							<tr>
-								<td>Complete checkout</td>
-								<td id="complete-checkout-comparison" class="hidden"></td>
-								<td id="complete-checkout-result"></td>
-								<td id="complete-checkout-trend" class="hidden"></td>
-							</tr>
-						</tbody>
-					</table>
+				<div class="row">
+					<div id="comparison-date">
+						<div class="col-xs-12 col-sm-6">
+							<span class="glyphicon glyphicon-calendar btn-lg" aria-hidden="true"></span>
+								<span>Add comparison period:</span>
+							</div>
+						<div class="col-xs-12 col-sm-6">
+							<form>
+								<input class="form-control" id="comparison-range" type="text" name="daterange" value="">
+								<!-- <input class="btn btn-default btn-xs" type="submit" value="Submit"> -->
+							</form>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-xs-12">
+						<table id="result-table" class="table hidden">
+							<thead>
+								<tr>
+									<th>Shopping stage</th>
+									<th class="text-right">Users</th>
+									<th id="th-comparison" class="hidden text-right">Comparison</th>
+									<th class="text-right">Result</th>
+									<th id="th-trend" class="hidden text-right">Trend</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td>Engagement</td>
+									<td id="engagement-users" class="text-right"></td>
+									<td id="engagement-comparison" class="hidden text-right"></td>
+									<td id="engagement-result" class="text-right"></td>
+									<td id="engagement-trend" class="hidden text-right"></td>
+								</tr>
+								<tr>
+									<td>Find rate</td>
+									<td id="find-users" class="text-right"></td>
+									<td id="find-comparison" class="hidden text-right"></td>
+									<td id="find-result" class="text-right"></td>
+									<td id="find-trend" class="hidden text-right"></td>
+								</tr>
+								<tr>
+									<td>Add to cart</td>
+									<td id="effectiveness-users" class="text-right"></td>
+									<td id="effectiveness-comparison" class="hidden text-right"></td>
+									<td id="effectiveness-result" class="text-right"></td>
+									<td id="effectiveness-trend" class="hidden text-right"></td>
+								</tr>
+								<tr>
+									<td>Begin Checkout</td>
+									<td id="begin-checkout-users" class="text-right"></td>
+									<td id="begin-checkout-comparison" class="hidden text-right"></td>
+									<td id="begin-checkout-result" class="text-right"></td>
+									<td id="begin-checkout-trend" class="hidden text-right"></td>
+								</tr>
+								<tr>
+									<td>Complete checkout</td>
+									<td id="complete-checkout-users" class="text-right"></td>
+									<td id="complete-checkout-comparison" class="hidden text-right"></td>
+									<td id="complete-checkout-result" class="text-right"></td>
+									<td id="complete-checkout-trend" class="hidden text-right"></td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -203,10 +210,10 @@
                         <h4 class="modal-title" id="modalSettingsLabel"><i class="fa fa-cog" aria-hidden="true"></i> Settings</h4>
                     </div>
                     <div class="modal-body">
-                        <p><i>Settings will be saved automatically on change</i>.</p>
-                        <a href="https://security.google.com/settings/security/permissions">Revoke authorization</a>
+                        <i>Settings will be saved automatically on change</i>.
+                        <a class="pull-right" href="https://security.google.com/settings/security/permissions">Revoke authorization</a>
                         <form class="form">
-                            <div class="form-group">
+                            <div id="settings-form" class="form-group">
                                 <label for="accountId">Account Id</label>
                                 <select class="form-control" id="accountId" disabled="true">
                                 </select>
