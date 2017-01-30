@@ -1,4 +1,4 @@
-/* global $, gapi, swal, moment, numeral, jQuery, D3Funnel */
+/* global $, gapi, swal, moment, numeral, jQuery, D3Funnel, analytics */
 /*eslint strict: [2, "never"]*/
 /*eslint no-use-before-define: [2, "nofunc"]*/
 /*eslint no-redeclare: [2, "never"]*/ //Funkar inte
@@ -341,7 +341,7 @@ function apiResponse(viewId, startDate, endDate, deviceCategory, userType, compa
 					}
 				},
 				block: {
-					dynamicHeight: false,
+					dynamicHeight: true,
 					highlight: true,
 					fill: {
 						type: 'gradient'
@@ -634,6 +634,7 @@ function authorize(event) {
 		} else {
 			authButton.hidden = true;
 			console.log('inloggad');
+			console.log(response);
 			queryAccounts();
 		}
 	});
@@ -665,6 +666,41 @@ function queryAccounts() {
 		// Get a list of all Google Analytics accounts for this user
 		gapi.client.analytics.management.accounts.list().then(handleAccounts);
 	});
+
+	// Get user name and email
+	gapi.client.load('plus', 'v1', function(){
+		var request = gapi.client.plus.people.get({
+		'userId': 'me'
+		});
+		request.execute(function(resp) {
+			var name = resp.displayName;
+			var email = handleEmailResponse(resp);
+
+			sendUserData(name, email);
+			console.log('Retrieved profile for:' + name + ', ' + email);
+		});
+	});
+}
+
+function handleEmailResponse(resp) {
+    var primaryEmail;
+    for (var i = 0; i < resp.emails.length; i++) {
+		if (resp.emails[i].type === 'account'){
+		primaryEmail = resp.emails[i].value;
+      }
+    }
+    return primaryEmail;
+}
+
+function sendUserData(name, email) {
+
+	if (typeof analytics !== 'undefined') {
+		console.log(name + '\n' + email);
+		analytics.identify({
+            name: name,
+            email: email
+        });
+    }
 }
 
 function handleAccounts(response) {
