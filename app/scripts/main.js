@@ -634,7 +634,6 @@ function authorize(event) {
 		} else {
 			authButton.hidden = true;
 			console.log('inloggad');
-			console.log(response);
 			queryAccounts();
 		}
 	});
@@ -644,7 +643,7 @@ function showAuthDialog() {
 	swal({
 		title: 'GA Authorization',
 		html: true,
-		text: 'We\'ll need permission to access your Google Analytics account.<br /> We won\'t save any infomation what so ever.',
+		text: 'We\'ll need permission to access your Google Analytics account.<br />',
 		imageUrl: 'images/google-analytics-logo.png',
 		confirmButtonText: 'Authorize',
 		confirmButtonColor: '#5cb85c',
@@ -683,13 +682,17 @@ function queryAccounts() {
 }
 
 function handleEmailResponse(resp) {
-    var primaryEmail;
-    for (var i = 0; i < resp.emails.length; i++) {
+
+	var primaryEmail;
+	for (var i = 0; i < resp.emails.length; i++) {
 		if (resp.emails[i].type === 'account'){
-		primaryEmail = resp.emails[i].value;
-      }
-    }
-    return primaryEmail;
+			primaryEmail = resp.emails[i].value;
+		}
+
+	}
+
+	return primaryEmail;
+
 }
 
 function sendUserData(name, email) {
@@ -697,10 +700,10 @@ function sendUserData(name, email) {
 	if (typeof analytics !== 'undefined') {
 		console.log(name + '\n' + email);
 		analytics.identify({
-            name: name,
-            email: email
-        });
-    }
+			name: name,
+			email: email
+		});
+	}
 }
 
 function handleAccounts(response) {
@@ -938,7 +941,7 @@ function checkIfNaN(val) {
 		swal({
 			title: 'Oops!',
 			html: true,
-			text: 'It seems your website doesn\'t use ecommerce tracking.<br>Please contact us for help!',
+			text: 'It seems your website doesn\'t use ecommerce tracking.<br><a href="mailto:martin@conversionista.se">Please contact us for help!</a>',
 			imageUrl: 'images/google-analytics-logo.png',
 			confirmButtonText: 'OK :(',
 			confirmButtonColor: '#5cb85c',
@@ -951,4 +954,5 @@ function checkIfNaN(val) {
 
 	return output;
 }
+
 
