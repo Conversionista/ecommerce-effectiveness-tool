@@ -24,7 +24,6 @@ if (ecomFunnel !== null) {
 var queryArray = ['PRODUCT_VIEW', 'ADD_TO_CART', 'CHECKOUT', 'TRANSACTION'];
 var queryObj = {};
 
-//var apiKey = 'AIzaSyAyOwKc0A79Db1vSRo6N0ZaxBAJqKY4ibc';
 var CLIENT_ID = '856128908931-99pe52krvhcn0v81oie89b357gqvgamq.apps.googleusercontent.com';
 var SCOPES = ['https://www.googleapis.com/auth/analytics.readonly', 'https://www.googleapis.com/auth/plus.me', 'https://www.googleapis.com/auth/plus.profile.emails.read'];
 
