@@ -1,11 +1,9 @@
 /* global $, gapi, swal, moment, numeral, jQuery, D3Funnel, analytics */
 /*eslint strict: [2, "never"]*/
 /*eslint no-use-before-define: [2, "nofunc"]*/
-/*eslint no-redeclare: [2, "never"]*/ //Funkar inte
-/*eslint dot-notation: ["error", { "allowPattern": "" }]*/ //Funkar inte
+
 
 // Check if anything is saved in the ecomFunnel object in local storage
-
 var ecomFunnel = readLocal('ecomFunnel'); // eslint-disable-line no-unused-vars
 
 if (ecomFunnel !== null) {
@@ -42,6 +40,7 @@ var completeCheckoutResult = 0;
 
 $(document).ready(function() {
 
+	// Set date range functionality
 	$('input[name="daterange"]').daterangepicker({
 		'locale': {
 			'format': 'YYYY-MM-DD',
@@ -94,7 +93,7 @@ $(document).ready(function() {
 
 	});
 
-	// Set start and end date for comparison date range and get result from API queries on click
+	// Set start and end date for comparison date range and get result from API queries on submit
 	$('#comparison-range').on('apply.daterangepicker', function(ev, picker) {
 
 		var comparisonStartDate = picker.startDate.format('YYYY-MM-DD');
@@ -119,13 +118,9 @@ $(document).ready(function() {
 		updateLocal('ecomFunnel', 'propertyId', propertyId);
 		updateLocal('ecomFunnel', 'viewId', viewId);
 
-		// console.log(startDate);
-		// console.log(endDate);
-		// console.log(viewId);
-
 	});
 
-	// Get data from API on click
+	// Get data from API
 	$('#get-funnel-btn').on('click', function(event) {
 
 		event.preventDefault();
@@ -137,6 +132,7 @@ $(document).ready(function() {
 
 	});
 
+	// Select account, property and view - then enable button
 	$('#accountId').on('change', function() {
 
 		accountId = $(this).val();
@@ -160,7 +156,7 @@ $(document).ready(function() {
 
 //////////////////////////////////////// F U N C T I O N S /////////////////////////////////////////
 
-//Collect the result from all the queries (when), then turn them into variables (then)
+// Collect result from all the queries (when), then turn them into variables (then)
 function apiResponse(viewId, startDate, endDate, deviceCategory, userType, comparison) { // eslint-disable-line no-shadow
 
 	$.when(
@@ -179,7 +175,6 @@ function apiResponse(viewId, startDate, endDate, deviceCategory, userType, compa
 
 			// Dimension name is inherited into the variabele 'dimensionName'
 			var dimensionName = shoppingStageRes.result.reports[0].data.rows[i].dimensions[0];
-			console.log(dimensionName);
 
 			// Check if dimensionName is part of queryArray
 			if (jQuery.inArray(dimensionName, queryArray) >= 0) {
@@ -200,7 +195,6 @@ function apiResponse(viewId, startDate, endDate, deviceCategory, userType, compa
 		//queryObj['USERS'] = usersRes.result.reports[0].data.rows[0].metrics[0].values[0];
 
 		// handle result from queryNonBounce and push into query object
-
 		queryObj.NON_BOUNCE_USERS = 0;
 
 		// Loop through the rows based on the required dimensions
@@ -219,6 +213,7 @@ function apiResponse(viewId, startDate, endDate, deviceCategory, userType, compa
 
 		benchmark = [0, 50, 71];
 
+		// If a comparison period is chosen, calculate diff (trend) and show table
 		if (comparison) {
 
 			trend = getTrend(engagementResult, engagementRate);
@@ -314,7 +309,7 @@ function apiResponse(viewId, startDate, endDate, deviceCategory, userType, compa
 		}
 
 		// Calculate cart abandonment rate
-		var cartAbandonmentRate = Math.round((1 - (queryObj.TRANSACTION / queryObj.CHECKOUT)) * 100); // eslint-disable-line no-unused-vars
+		// var cartAbandonmentRate = Math.round((1 - (queryObj.TRANSACTION / queryObj.CHECKOUT)) * 100);
 
 		//console.log(queryObj);
 		$('#canvas').removeClass('hidden');
@@ -322,11 +317,11 @@ function apiResponse(viewId, startDate, endDate, deviceCategory, userType, compa
 		// If there's no comparison date chosen, draw the funnel
 		if (!comparison) {
 			var data = [
-				['Stay on site', [queryObj.NON_BOUNCE_USERS, engagementRate]],
-				['Finding product', [queryObj.PRODUCT_VIEW, findRate]],
-				['Add to cart', [queryObj.ADD_TO_CART, productPageEffectivenessRate]],
-				['Begin checkout', [queryObj.CHECKOUT, checkoutRate]],
-				['Complete checkout', [queryObj.TRANSACTION, checkoutCompletionRate]]
+				['Stay on site', [queryObj.NON_BOUNCE_USERS, engagementRate], '#c61618'],
+				['Finding product', [queryObj.PRODUCT_VIEW, findRate], '#a11b1c'],
+				['Add to cart', [queryObj.ADD_TO_CART, productPageEffectivenessRate], '#c61618'],
+				['Begin checkout', [queryObj.CHECKOUT, checkoutRate], '#a11b1c'],
+				['Complete checkout', [queryObj.TRANSACTION, checkoutCompletionRate], '#c61618']
 			];
 
 			var options = {
@@ -341,7 +336,7 @@ function apiResponse(viewId, startDate, endDate, deviceCategory, userType, compa
 					}
 				},
 				block: {
-					dynamicHeight: true,
+					dynamicHeight: false,
 					highlight: true,
 					fill: {
 						type: 'gradient'
@@ -357,31 +352,31 @@ function apiResponse(viewId, startDate, endDate, deviceCategory, userType, compa
 							if (d.index === 0) {
 								swal({
 									title: 'Stay on site',
-									text: 'Engagement rate or opposite of bounce rate. Users who move on to another page or trigger some kind of event.<br><span style="color:green;">Good: 70-100%</span><br><span style="color:#E60000;">Bad: 0-50%</span>',
+									text: 'Engagement rate or opposite of bounce rate. Users who moved on to another page or triggered some kind of event.<br><br><span style="color:green;"><b>Good: 70-100%</b></span><br><span style="color:#c61618;"><b>Bad: 0-50%</b></span>',
 									html: true
 								});
 							} else if (d.index === 1) {
 								swal({
 									title: 'Find products',
-									text: 'Finding rate, or how many users (out of the stay-on-site-users) who visit at least one product page.<br><span style="color:green;">Good: 80-100%</span><br><span style="color:#E60000;">Bad: 0-60%</span>',
+									text: 'Finding rate, or how many users (out of the stay-on-site-users) who visited at least one product page.<br><br><span style="color:green;"><b>Good: 80-100%</b></span><br><span style="color:#c61618;"><b>Bad: 0-60%</b></span>',
 									html: true
 								});
 							} else if (d.index === 2) {
 								swal({
 									title: 'Add to cart',
-									text: 'Your product page effectiveness, or how many users (out of the find-product-users) who add an item to shopping cart.<br><span style="color:green;">Good: 20-100%</span><br><span style="color:#E60000;">Bad: 0-15%</span>',
+									text: 'Your product page effectiveness, or how many users (out of the find-product-users) who added an item to shopping cart.<br><br><span style="color:green;"><b>Good: 20-100%</b></span><br><span style="color:#c61618;"><b>Bad: 0-15%</b></span>',
 									html: true
 								});
 							} else if (d.index === 3) {
 								swal({
 									title: 'Begin checkout',
-									text: 'Checkout rate, or how many users (out of the add-to-cart-users) who visit the checkout page.<br><span style="color:green;">Good: 80-100%</span><br><span style="color:#E60000;">Bad: 0-50%</span>',
+									text: 'Checkout rate, or how many users (out of the add-to-cart-users) who visited the checkout page.<br><br><span style="color:green;"><b>Good: 80-100%</b></span><br><span style="color:#c61618;"><b>Bad: 0-50%</b></span>',
 									html: true
 								});
 							} else if (d.index === 4) {
 								swal({
 									title: 'Complete checkout',
-									text: 'Checkout completion rate, or how many users (out of the begin-checkout-users) who complete the purchase.<br><span style="color:green;">Good: 60-100%</span><br><span style="color:#E60000;">Bad: 0-40%</span>',
+									text: 'Checkout completion rate, or how many users (out of the begin-checkout-users) who completed the purchase.<br><br><span style="color:green;"><b>Good: 60-100%</b></span><br><span style="color:#c61618;"><b>Bad: 0-40%</b></span>',
 									html: true
 								});
 							}
@@ -389,7 +384,6 @@ function apiResponse(viewId, startDate, endDate, deviceCategory, userType, compa
 					}
 				}
 			};
-
 			const chart = new D3Funnel('#funnel');
 			chart.draw(data, options);
 		}
@@ -614,19 +608,21 @@ function getTrend(val1, val2) {
 	return res;
 }
 
+// Handle the authorization
 function authorize(event) {
-	// Handles the authorization flow.
 	// 'immediate' should be false when invoked from the button click.
 	var useImmdiate = event ? false : true;
 	var authData = {
-		// eslint-disable-next-line
+
 		client_id: CLIENT_ID, // eslint-disable-line camelcase
 		scope: SCOPES,
 		immediate: useImmdiate
 	};
 
 	gapi.auth.authorize(authData, function(response) {
+
 		var authButton = document.getElementById('auth-button');
+
 		if (response.error) {
 			authButton.hidden = false;
 
@@ -659,7 +655,7 @@ function showAuthDialog() {
 
 function queryAccounts() {
 
-	// Load the Google Analytics client library.
+	// Load the Google Analytics client library
 	gapi.client.load('analytics', 'v3').then(function() {
 
 		// Get a list of all Google Analytics accounts for this user
@@ -684,11 +680,11 @@ function queryAccounts() {
 function handleEmailResponse(resp) {
 
 	var primaryEmail;
+
 	for (var i = 0; i < resp.emails.length; i++) {
 		if (resp.emails[i].type === 'account'){
 			primaryEmail = resp.emails[i].value;
 		}
-
 	}
 
 	return primaryEmail;
@@ -708,7 +704,7 @@ function sendUserData(name, email) {
 
 function handleAccounts(response) {
 
-	// Handles the response from the accounts list method.
+	// Handles the response from the accounts list method
 	if (response.result.items && response.result.items.length) {
 
 		$('#accountId').html('<option selected="selected" disabled="true">-- Please select -- </option>').attr('disabled', false);
@@ -730,12 +726,12 @@ function handleAccounts(response) {
 				selected: selected
 			}));
 		});
-		// Get the first Google Analytics account.
+		// Get the first Google Analytics account
 		if (!accountId) {
 			accountId = response.result.items[0].id;
 		}
 
-		// Query for properties.
+		// Query for properties
 		queryProperties(accountId);
 
 	} else {
@@ -744,7 +740,7 @@ function handleAccounts(response) {
 }
 
 function queryProperties(accountId) { // eslint-disable-line no-shadow
-	// Get a list of all the properties for the account.
+	// Get a list of all the properties for the account
 	gapi.client.analytics.management.webproperties.list({ 'accountId': accountId })
 	.then(handleProperties).then(null, function(err) {
 			// Log any errors.
@@ -753,7 +749,7 @@ function queryProperties(accountId) { // eslint-disable-line no-shadow
 }
 
 function handleProperties(response) {
-	// Handles the response from the webproperties list method.
+	// Handles the response from the webproperties list method
 	if (response.result.items && response.result.items.length) {
 
 		$('#propertyId').html('<option selected="selected" disabled="true">-- Please select -- </option>').attr('disabled', false);
@@ -782,7 +778,7 @@ function handleProperties(response) {
 			propertyId = response.result.items[0].id;
 		}
 
-		// Query for Views (Profiles).
+		// Query for Views (Profiles)
 		queryProfiles(accountId, propertyId);
 	} else {
 		console.log('No properties found for this user.');
@@ -790,16 +786,15 @@ function handleProperties(response) {
 }
 
 function queryProfiles(accountId, propertyId) { // eslint-disable-line no-shadow
-	// Get a list of all Views (Profiles) for the first property
-	// of the first Account.
+	// Get a list of all Views (Profiles) for the first property of the first Account
 	gapi.client.analytics.management.profiles.list({
-			'accountId': accountId,
-			'webPropertyId': propertyId
-		})
-		.then(handleProfiles).then(null, function(err) {
-			// Log any errors.
-			console.log(err);
-		});
+		'accountId': accountId,
+		'webPropertyId': propertyId
+	})
+	.then(handleProfiles).then(null, function(err) {
+		// Log any errors.
+		console.log(err);
+	});
 }
 
 function handleProfiles(response) {
@@ -842,6 +837,7 @@ function readLocal(name) {
 	var data = JSON.parse(localStorage.getItem(name));
 	return data;
 }
+
 // Find and update keys and values in object
 function updateLocal(name, k, v) {
 	var data = readLocal(name);
@@ -885,7 +881,7 @@ function setBenchmarkSymbol(apiValue, benchmarkValues) {
 	// Loop through benchmark array.
 	$.each(benchmarkValues, function(key, val) {
 		// If API value is greater than or equals loop value,
-		// the position variable inherits theposition of the value in the array
+		// the position variable inherits the position of the value in the array
 		if (apiValue >= val) {
 
 			position = key;
@@ -954,5 +950,3 @@ function checkIfNaN(val) {
 
 	return output;
 }
-
-
