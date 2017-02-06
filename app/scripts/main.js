@@ -917,15 +917,15 @@ function setBenchmarkColor(apiValue, benchmarkValues) {
 
 	if (position === 0) {
 
-		color = '#ff0000';
+		color = '#C12107';
 
 	} else if (position === 1) {
 
-		color = '#ffcc00';
+		color = '#F4CD24';
 
 	} else if (position === 2) {
 
-		color = '#00ff00';
+		color = '#65B739';
 	}
 
 	return color;
