@@ -19,6 +19,22 @@ if (ecomFunnel !== null) {
 	viewId = false;
 }
 
+$('body').loadie();
+$('.loadie').fadeIn();
+
+var progress = 0.2;
+
+function addProgress(f) {
+    progress += f;
+    $('body').loadie(progress);
+}
+
+function finishProgress() {
+    progress = 1;
+    // console.log('Finished the Loadie - '+progress);
+    $('body').loadie(progress);
+}
+
 var queryArray = ['PRODUCT_VIEW', 'ADD_TO_CART', 'CHECKOUT', 'TRANSACTION'];
 var queryObj = {};
 
@@ -124,6 +140,8 @@ $(document).ready(function() {
 
 		event.preventDefault();
 
+		addProgress(0.13);
+
 		deviceCategory = $('input[name="deviceCategory"]:checked').val();
 		userType = $('input[name="userType"]:checked').val();
 
@@ -165,7 +183,6 @@ function apiResponse(viewId, startDate, endDate, deviceCategory, userType, compa
 
 	).then(function(shoppingStageRes, usersRes, nonBounceRes) {
 
-		var benchmark = [];
 		var trend = 0;
 
 		// Handle results from queryShoppingStage
@@ -210,21 +227,21 @@ function apiResponse(viewId, startDate, endDate, deviceCategory, userType, compa
 			return false;
 		}
 
-		benchmark = [0, 50, 71];
+		var engagementRateBenchmark = [0, 50, 71];
 
 		// If a comparison period is chosen, calculate diff (trend) and show table
 		if (comparison) {
 
 			trend = getTrend(engagementResult, engagementRate);
 
-			setComparison('engagement', engagementRate, trend, benchmark);
+			setComparison('engagement', engagementRate, trend, engagementRateBenchmark);
 			$('#result-table').removeClass('hidden');
 
 		} else {
 
 			engagementResult = engagementRate;
 
-			setResult('engagement', engagementRate, benchmark, queryObj.NON_BOUNCE_USERS);
+			setResult('engagement', engagementRate, engagementRateBenchmark, queryObj.NON_BOUNCE_USERS);
 		}
 
 		// Calculate finding rate
@@ -234,19 +251,19 @@ function apiResponse(viewId, startDate, endDate, deviceCategory, userType, compa
 			return false;
 		}
 
-		benchmark = [0, 60, 81];
+		var findRateBenchmark = [0, 60, 81];
 
 		if (comparison) {
 
 			trend = getTrend(findResult, findRate);
 
-			setComparison('find', findRate, trend, benchmark);
+			setComparison('find', findRate, trend, findRateBenchmark);
 
 		} else {
 
 			findResult = findRate;
 
-			setResult('find', findRate, benchmark, queryObj.PRODUCT_VIEW);
+			setResult('find', findRate, findRateBenchmark, queryObj.PRODUCT_VIEW);
 		}
 
 		// Calculate product page effectiveness rate
@@ -256,55 +273,55 @@ function apiResponse(viewId, startDate, endDate, deviceCategory, userType, compa
 			return false;
 		}
 
-		benchmark = [0, 15, 21];
+		var productPageEffectivenessRateBenchmark = [0, 15, 21];
 
 		if (comparison) {
 
 			trend = getTrend(effectivenessResult, productPageEffectivenessRate);
 
-			setComparison('effectiveness', productPageEffectivenessRate, trend, benchmark);
+			setComparison('effectiveness', productPageEffectivenessRate, trend, productPageEffectivenessRateBenchmark);
 
 		} else {
 
 			effectivenessResult = productPageEffectivenessRate;
 
-			setResult('effectiveness', productPageEffectivenessRate, benchmark, queryObj.ADD_TO_CART);
+			setResult('effectiveness', productPageEffectivenessRate, productPageEffectivenessRateBenchmark, queryObj.ADD_TO_CART);
 		}
 
 		// Calculate checkout rate
 		var checkoutRate = getPercent(queryObj.CHECKOUT, queryObj.ADD_TO_CART);
 
-		benchmark = [0, 60, 81];
+		var checkoutRateBenchmark = [0, 60, 81];
 
 		if (comparison) {
 
 			trend = getTrend(beginCheckoutResult, checkoutRate);
 
-			setComparison('begin-checkout', checkoutRate, trend, benchmark);
+			setComparison('begin-checkout', checkoutRate, trend, checkoutRateBenchmark);
 
 		} else {
 
 			beginCheckoutResult = checkoutRate;
 
-			setResult('begin-checkout', checkoutRate, benchmark, queryObj.CHECKOUT);
+			setResult('begin-checkout', checkoutRate, checkoutRateBenchmark, queryObj.CHECKOUT);
 		}
 
 		// Calculate checkout completion rate
 		var checkoutCompletionRate = getPercent(queryObj.TRANSACTION, queryObj.CHECKOUT);
 
-		benchmark = [0, 40, 61];
+		var checkoutCompletionRateBenchmark = [0, 40, 61];
 
 		if (comparison) {
 
 			trend = getTrend(completeCheckoutResult, checkoutCompletionRate);
 
-			setComparison('complete-checkout', checkoutCompletionRate, trend, benchmark);
+			setComparison('complete-checkout', checkoutCompletionRate, trend, checkoutCompletionRateBenchmark);
 
 		} else {
 
 			completeCheckoutResult = checkoutCompletionRate;
 
-			setResult('complete-checkout', checkoutCompletionRate, benchmark, queryObj.TRANSACTION);
+			setResult('complete-checkout', checkoutCompletionRate, checkoutCompletionRateBenchmark, queryObj.TRANSACTION);
 		}
 
 		// Calculate cart abandonment rate
@@ -316,12 +333,14 @@ function apiResponse(viewId, startDate, endDate, deviceCategory, userType, compa
 		// If there's no comparison date chosen, draw the funnel
 		if (!comparison) {
 			var data = [
-				['Stay on site', [queryObj.NON_BOUNCE_USERS, engagementRate], '#c61618'],
-				['Finding product', [queryObj.PRODUCT_VIEW, findRate], '#a11b1c'],
-				['Add to cart', [queryObj.ADD_TO_CART, productPageEffectivenessRate], '#c61618'],
-				['Begin checkout', [queryObj.CHECKOUT, checkoutRate], '#a11b1c'],
-				['Complete checkout', [queryObj.TRANSACTION, checkoutCompletionRate], '#c61618']
+				['Stay on site', engagementRate, setBenchmarkColor(engagementRate, engagementRateBenchmark)],
+				['Finding product', findRate, setBenchmarkColor(findRate, findRateBenchmark)],
+				['Add to cart', productPageEffectivenessRate, setBenchmarkColor(productPageEffectivenessRate, productPageEffectivenessRateBenchmark)],
+				['Begin checkout', checkoutRate, setBenchmarkColor(checkoutRate, checkoutRateBenchmark)],
+				['Complete checkout', checkoutCompletionRate, setBenchmarkColor(checkoutCompletionRate, checkoutCompletionRateBenchmark)]
 			];
+
+			console.log(data);
 
 			var options = {
 				chart: {
@@ -337,6 +356,7 @@ function apiResponse(viewId, startDate, endDate, deviceCategory, userType, compa
 				block: {
 					dynamicHeight: false,
 					highlight: true,
+					barOverlay: false,
 					fill: {
 						type: 'gradient'
 					}
@@ -385,6 +405,8 @@ function apiResponse(viewId, startDate, endDate, deviceCategory, userType, compa
 			};
 			const chart = new D3Funnel('#funnel');
 			chart.draw(data, options);
+
+			finishProgress();
 		}
 	});
 }
@@ -629,6 +651,9 @@ function authorize(event) {
 		} else {
 			authButton.hidden = true;
 			console.log('inloggad');
+			if(ecomFunnel === null) {
+				$('#modalSettings').modal('show');
+			}
 			queryAccounts();
 		}
 	});
@@ -725,6 +750,7 @@ function handleAccounts(response) {
 				selected: selected
 			}));
 		});
+
 		// Get the first Google Analytics account
 		if (!accountId) {
 			accountId = response.result.items[0].id;
@@ -870,6 +896,39 @@ function setComparison(string, val1, val2, benchmark) {
 	$('#th-comparison, #th-trend').removeClass('hidden');
 	$('#' + string + '-comparison').removeClass('hidden').addClass('').html(val1 + '%' + benchSymbol);
 	$('#' + string + '-trend').removeClass('hidden').addClass('').html(val2 + '%' + trendSymbol);
+}
+
+// Needle = API value. Haystack = benchmark array
+function setBenchmarkColor(apiValue, benchmarkValues) {
+
+	var position = 0;
+
+	// Loop through benchmark array.
+	$.each(benchmarkValues, function(key, val) {
+		// If API value is greater than or equals loop value,
+		// the position variable inherits the position of the value in the array
+		if (apiValue >= val) {
+
+			position = key;
+		}
+	});
+
+	var color = '';
+
+	if (position === 0) {
+
+		color = '#ff0000';
+
+	} else if (position === 1) {
+
+		color = '#ffcc00';
+
+	} else if (position === 2) {
+
+		color = '#00ff00';
+	}
+
+	return color;
 }
 
 // Needle = API value. Haystack = benchmark array
