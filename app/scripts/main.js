@@ -1,4 +1,4 @@
-/* global $, gapi, swal, moment, numeral, jQuery, D3Funnel, analytics */
+/* global $, gapi, swal, moment, numeral, jQuery, D3Funnel, analytics, Pace */
 /*eslint strict: [2, "never"]*/
 /*eslint no-use-before-define: [2, "nofunc"]*/
 
@@ -12,27 +12,13 @@ if (ecomFunnel !== null) {
 	var propertyId = ecomFunnel.propertyId;
 	var viewId = ecomFunnel.viewId;
 
+	console.log(viewId);
+
 } else {
 
 	accountId = false;
 	propertyId = false;
 	viewId = false;
-}
-
-$('body').loadie();
-$('.loadie').fadeIn();
-
-var progress = 0.2;
-
-function addProgress(f) {
-    progress += f;
-    $('body').loadie(progress);
-}
-
-function finishProgress() {
-    progress = 1;
-    // console.log('Finished the Loadie - '+progress);
-    $('body').loadie(progress);
 }
 
 var queryArray = ['PRODUCT_VIEW', 'ADD_TO_CART', 'CHECKOUT', 'TRANSACTION'];
@@ -43,6 +29,8 @@ var SCOPES = ['https://www.googleapis.com/auth/analytics.readonly', 'https://www
 
 var startDate = moment().subtract(31, 'days').format('YYYY-MM-DD');
 var endDate = moment().subtract(1, 'days').format('YYYY-MM-DD');
+var comparisonStartDate = 0;
+var comparisonEndDate = 0;
 
 var deviceCategory = '';
 var userType = '';
@@ -55,13 +43,17 @@ var completeCheckoutResult = 0;
 
 $(document).ready(function() {
 
+	Pace.on('done', function() {
+		hideLoader();
+	});
+
 	// Set date range functionality
 	$('input[name="daterange"]').daterangepicker({
 		'locale': {
 			'format': 'YYYY-MM-DD',
 			'separator': ' – ',
 			'applyLabel': 'Apply',
-			'cancelLabel': 'Undo',
+			'cancelLabel': 'Cancel',
 			'fromLabel': 'From',
 			'toLabel': 'To',
 			'customRangeLabel': 'Custom',
@@ -108,15 +100,38 @@ $(document).ready(function() {
 
 	});
 
+	$('#date-range').on('cancel.daterangepicker', function() {
+
+		$('#date-range').val(startDate + ' to ' + endDate);
+
+	});
+
 	// Set start and end date for comparison date range and get result from API queries on submit
 	$('#comparison-range').on('apply.daterangepicker', function(ev, picker) {
 
-		var comparisonStartDate = picker.startDate.format('YYYY-MM-DD');
-		var comparisonEndDate = picker.endDate.format('YYYY-MM-DD');
+		comparisonStartDate = picker.startDate.format('YYYY-MM-DD');
+		comparisonEndDate = picker.endDate.format('YYYY-MM-DD');
 
 		$('#comparison-range').val(picker.startDate.format('YYYY-MM-DD') + ' to ' + picker.endDate.format('YYYY-MM-DD'));
 
-		apiResponse(viewId, comparisonStartDate, comparisonEndDate, deviceCategory, userType, true);
+	});
+
+	$('#comparison-range').on('hide.daterangepicker', function(ev, picker) {
+
+		if (comparisonStartDate === 0 && comparisonEndDate === 0) {
+
+			$('#comparison-range').val('');
+		} else {
+			$('#comparison-range').val(picker.startDate.format('YYYY-MM-DD') + ' to ' + picker.endDate.format('YYYY-MM-DD'));
+		}
+	});
+
+	$('#comparison-range').on('cancel.daterangepicker', function() {
+
+		comparisonStartDate = 0;
+		comparisonEndDate = 0;
+
+		$('#comparison-range').val('');
 
 	});
 
@@ -140,13 +155,20 @@ $(document).ready(function() {
 
 		event.preventDefault();
 
-		addProgress(0.13);
+		setProgressBar(0);
 
 		deviceCategory = $('input[name="deviceCategory"]:checked').val();
 		userType = $('input[name="userType"]:checked').val();
 
-		apiResponse(viewId, startDate, endDate, deviceCategory, userType);
+		$.when(
+			apiResponse(viewId, startDate, endDate, deviceCategory, userType)
+		).then(function(){
 
+			if (comparisonStartDate !== 0 && comparisonEndDate !== 0) {
+				apiResponse(viewId, comparisonStartDate, comparisonEndDate, deviceCategory, userType, true);
+			}
+			$('#get-funnel-btn').text('Update result');
+		});
 	});
 
 	// Select account, property and view - then enable button
@@ -154,6 +176,8 @@ $(document).ready(function() {
 
 		accountId = $(this).val();
 		queryProperties(accountId);
+
+		$('#viewId').html('<option selected="selected" disabled="true">-- Please select -- </option>').attr('disabled', false);
 	});
 
 	$('#propertyId').on('change', function() {
@@ -166,8 +190,23 @@ $(document).ready(function() {
 
 		viewId = $(this).val();
 
+		var viewIdName = $('#viewId option:selected').text();
+
 		$('#get-funnel-btn').prop('disabled', false);
 		$('#save-settings-btn').prop('disabled', false);
+
+		$('#selected-account').text(viewIdName);
+	});
+
+	$('#comparison-toggle').click(function(e) {
+
+		e.preventDefault();
+
+		$('#comparison-date').slideToggle(200, function(){
+
+			$('#comparison-toggle i').toggleClass('fa-angle-down').toggleClass('fa-angle-up');
+
+		});
 	});
 });
 
@@ -176,6 +215,13 @@ $(document).ready(function() {
 // Collect result from all the queries (when), then turn them into variables (then)
 function apiResponse(viewId, startDate, endDate, deviceCategory, userType, comparison) { // eslint-disable-line no-shadow
 
+	// load white background
+	showLoader();
+	// set progress bar to 22 to show progress
+	// setProgressBar(22);
+
+	var ticker = loaderTick(2, 100, 150);
+
 	$.when(
 		queryShoppingStage(viewId, startDate, endDate, deviceCategory, userType),
 		queryUsers(viewId, startDate, endDate, deviceCategory, userType),
@@ -183,11 +229,17 @@ function apiResponse(viewId, startDate, endDate, deviceCategory, userType, compa
 
 	).then(function(shoppingStageRes, usersRes, nonBounceRes) {
 
+		var shoppingStageResult = 0;
+
+		if(shoppingStageRes.result.reports[0].data.rows !== undefined){
+			shoppingStageResult = shoppingStageRes.result.reports[0].data.rows.length;
+		}
+
 		var trend = 0;
 
 		// Handle results from queryShoppingStage
 		// Loop through rows in the shoppingStage object
-		for (var i = 0; i < shoppingStageRes.result.reports[0].data.rows.length; i++) {
+		for (var i = 0; i < shoppingStageResult; i++) {
 
 			// Dimension name is inherited into the variabele 'dimensionName'
 			var dimensionName = shoppingStageRes.result.reports[0].data.rows[i].dimensions[0];
@@ -202,10 +254,42 @@ function apiResponse(viewId, startDate, endDate, deviceCategory, userType, compa
 
 		queryObj.USERS = 0;
 
+		console.log('Users (bounce & non bounce)');
 		$.each(usersRes.result.reports[0].data.rows, function(key, value) {
 
 			queryObj.USERS += Number(value.metrics[0].values[0]);
+
+			var type = '';
+			if (key === 0) {
+				type = 'New users on desktop';
+			} else if (key === 1) {
+				type = 'New users on mobile';
+			} else if (key === 2) {
+				type = 'New users on tablet';
+			} else if (key === 3) {
+				type = 'Returning users on desktop';
+			} else if (key === 4) {
+				type = 'Returning users on mobile';
+			} else if (key === 5) {
+				type = 'Returning users on tablet';
+			}
+			console.log(type + ': ' + Number(value.metrics[0].values[0]));
 		});
+
+		console.log('Total users: ' + queryObj.USERS);
+
+		if (comparison) {
+
+			$('#all-comparison').removeClass('hidden').html(queryObj.USERS);
+			$('#all-trend').removeClass('hidden').html('-');
+
+		} else {
+
+			$('#all-users').addClass('').html(queryObj.USERS);
+			$('#all-result').html('-');
+			$('#all-comparison').addClass('hidden').html('');
+			$('#all-trend').addClass('hidden').html('');
+		}
 
 		// handle result from queryUsers and push into query object
 		//queryObj['USERS'] = usersRes.result.reports[0].data.rows[0].metrics[0].values[0];
@@ -213,11 +297,29 @@ function apiResponse(viewId, startDate, endDate, deviceCategory, userType, compa
 		// handle result from queryNonBounce and push into query object
 		queryObj.NON_BOUNCE_USERS = 0;
 
+		console.log('Users (non bounce)');
+
 		// Loop through the rows based on the required dimensions
 		// (userType = new/returning, deviceCategory = mobile/tablet/desktop)
 		$.each(nonBounceRes.result.reports[0].data.rows, function(key, value) {
 
 			queryObj.NON_BOUNCE_USERS += Number(value.metrics[0].values[0]);
+
+			var type = '';
+			if (key === 0) {
+				type = 'New users on desktop';
+			} else if (key === 1) {
+				type = 'New users on mobile';
+			} else if (key === 2) {
+				type = 'New users on tablet';
+			} else if (key === 3) {
+				type = 'Returning users on desktop';
+			} else if (key === 4) {
+				type = 'Returning users on mobile';
+			} else if (key === 5) {
+				type = 'Returning users on tablet';
+			}
+			console.log(type + ': ' + Number(value.metrics[0].values[0]));
 		});
 
 		// Calculate engagement rate
@@ -226,6 +328,8 @@ function apiResponse(viewId, startDate, endDate, deviceCategory, userType, compa
 		if (checkIfNaN(engagementRate)) {
 			return false;
 		}
+
+		console.log('Total non bounce users: ' + queryObj.NON_BOUNCE_USERS);
 
 		var engagementRateBenchmark = [0, 50, 71];
 
@@ -242,10 +346,13 @@ function apiResponse(viewId, startDate, endDate, deviceCategory, userType, compa
 			engagementResult = engagementRate;
 
 			setResult('engagement', engagementRate, engagementRateBenchmark, queryObj.NON_BOUNCE_USERS);
+			$('#result-table').removeClass('hidden');
 		}
 
 		// Calculate finding rate
 		var findRate = getPercent(queryObj.PRODUCT_VIEW, queryObj.NON_BOUNCE_USERS);
+
+		console.log(findRate);
 
 		if (checkIfNaN(findRate)) {
 			return false;
@@ -329,6 +436,7 @@ function apiResponse(viewId, startDate, endDate, deviceCategory, userType, compa
 
 		//console.log(queryObj);
 		$('#canvas').removeClass('hidden');
+		$('#click-blocks').removeClass('hidden');
 
 		// If there's no comparison date chosen, draw the funnel
 		if (!comparison) {
@@ -405,9 +513,11 @@ function apiResponse(viewId, startDate, endDate, deviceCategory, userType, compa
 			};
 			const chart = new D3Funnel('#funnel');
 			chart.draw(data, options);
-
-			finishProgress();
 		}
+
+		clearInterval(ticker);
+		setProgressBar(100);
+		hideLoader();
 	});
 }
 
@@ -535,7 +645,7 @@ function queryNonBounce(viewId, startDate, endDate, deviceCategory, userType) { 
 				}],
 				segments: [{
 					dynamicSegment: {
-						name: 'segment_name',
+						name: 'non_bounces',
 						sessionSegment: {
 							segmentFilters: [{
 								simpleSegment: {
@@ -599,6 +709,8 @@ function queryShoppingStage(viewId, startDate, endDate, deviceCategory, userType
 				viewId: viewId,
 				dimensions: [{
 					name: 'ga:shoppingStage'
+				}, {
+					name: 'ga:segment'
 				}],
 				dimensionFilterClauses: [{
 					operator: 'AND',
@@ -611,6 +723,26 @@ function queryShoppingStage(viewId, startDate, endDate, deviceCategory, userType
 						operator: 'IN_LIST',
 						expressions: deviceCategoryArray
 					}]
+				}],
+				segments: [{
+					dynamicSegment: {
+						name: 'non_bounces',
+						sessionSegment: {
+							segmentFilters: [{
+								simpleSegment: {
+									orFiltersForSegment: [{
+										segmentFilterClauses: [{
+											metricFilter: {
+												metricName: 'ga:bounces',
+												operator: 'EQUAL',
+												comparisonValue: '0'
+											}
+										}]
+									}]
+								}
+							}]
+						}
+					}
 				}]
 			}]
 		}
@@ -835,6 +967,8 @@ function handleProfiles(response) {
 				$('#get-funnel-btn').prop('disabled', false);
 				$('#save-settings-btn').prop('disabled', false);
 
+				$('#selected-account').text(val.name);
+
 			} else {
 
 				selected = false;
@@ -992,10 +1126,13 @@ function checkIfNaN(val) {
 
 	if (isNaN(val)) {
 
+		setProgressBar(100);
+		hideLoader();
+
 		swal({
 			title: 'Oops!',
 			html: true,
-			text: 'It seems your website doesn\'t use ecommerce tracking.<br><a href="mailto:martin@conversionista.se">Please contact us for help!</a>',
+			text: 'It seems your website doesn\'t have enhanced ecommerce tracking in place.<br><a href="mailto:martin@conversionista.se">Please contact us for help!</a>',
 			imageUrl: 'images/google-analytics-logo.png',
 			confirmButtonText: 'OK :(',
 			confirmButtonColor: '#5cb85c',
@@ -1008,3 +1145,48 @@ function checkIfNaN(val) {
 
 	return output;
 }
+
+function hideLoader(){
+
+	$('#loader').fadeOut(200);
+}
+
+function showLoader(){
+
+	$('#loader').fadeIn(200);
+}
+
+// to set progress bar to specific value
+function setProgressBar(value) {
+
+	// set body and .pace classes to show pace progress bar by changing classes
+	$('body').removeClass('pace-done').addClass('pace-running');
+	$('.pace').removeClass('pace-inactive').addClass('pace-active');
+
+	// insert the selected value into attribute "data-progress-text" and change the styling to the same value (see css from pace.js)
+	$('.pace-progress').attr('data-progress-text', value + '%').attr('style', 'transform: translate3d(' + value + '%, 0px, 0px);');
+
+	// if value is 100 the load bar is complete and gets removed by altering body and .pace classes
+	if(value === 100) {
+		$('body').removeClass('pace-running').addClass('pace-done');
+		$('.pace').removeClass('pace-active').addClass('pace-inactive');
+	}
+}
+
+function loaderTick(startVal, stopVal, ms){
+
+	var newVal = startVal;
+
+	var loaderStatus = setInterval(function(){
+
+		if (newVal <= stopVal){
+			$('.pace-progress').attr('data-progress-text', newVal + '%').attr('style', 'transform: translate3d(' + newVal + '%, 0px, 0px);');
+
+			newVal++;
+		}
+
+	}, ms);
+
+	return loaderStatus;
+}
+

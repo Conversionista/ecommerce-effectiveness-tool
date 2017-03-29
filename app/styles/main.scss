@@ -46,3 +46,119 @@ $icon-font-path: '../fonts/';
     /* your css goes here */
     @import 'mobile';
 }
+
+#c-logo-small {
+    width: 70%;
+}
+
+#auth-button {
+    display: none;
+}
+
+#click-blocks {
+    position: absolute;
+    width: 200px;
+    right: -200px;
+    top: 150px;
+}
+
+#display-account {
+    height: 40px;
+}
+
+#get-funnel-btn {
+    margin: 20px 0;
+}
+
+#funnel {
+    /*padding-top: 20px;*/
+}
+
+.medium-italic {
+    font-size: 1.1em;
+    font-weight: 600;
+    font-style: italic;
+}
+
+#canvas {
+    margin-bottom: 30px;
+}
+
+#settings-form {
+    margin-top: 20px;
+}
+
+#comparison-date {
+    display: none;
+}
+
+.content-box {
+    border: 2px solid #e7e7e7;
+    background-color: #f8f8f8;
+    border-radius: 4px;
+    margin-bottom: 30px;
+
+}
+
+textarea {
+    width: 100%;
+    height: 300px;
+    border-radius: 5px;
+}
+
+form {
+    display: inline;
+}
+
+.metric {
+    box-sizing: border-box;
+    height: 100px;
+    vertical-align: -45px;
+}
+
+.footer {
+    padding-top: 19px;
+    color: #777;
+    border-top: 1px solid #e5e5e5;
+    text-align: center;
+}
+
+.marketing {
+    margin-bottom: 20px;
+    p + h4 {
+        margin-top: 28px;
+    }
+}
+
+.fa-heart {
+    transition: color .25s ease-in-out;
+        -webkit-transition: color .25s ease-in-out;
+    &:hover {
+        color: red;
+    }
+}
+
+a.underline {
+    $linkColor: blue;
+    color: $linkColor;
+    text-decoration: none;
+    position: relative;
+    text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff;
+    background-image: linear-gradient(to top, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0) 2px, $linkColor 2px, $linkColor 3px, rgba(0, 0, 0, 0) 3px);
+    
+    &:hover {
+        opacity: 0.5;
+        transition: opacity .15s ease-in-out;
+        -webkit-transition: opacity .15s ease-in-out;
+    }
+}
+
+#loader {
+    background:rgba(255,255,255,0.5);
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 99999;
+}
