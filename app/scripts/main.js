@@ -479,31 +479,31 @@ function apiResponse(viewId, startDate, endDate, deviceCategory, userType, compa
 							if (d.index === 0) {
 								swal({
 									title: 'Stay on site',
-									text: 'Engagement rate or opposite of bounce rate. Users who moved on to another page or triggered some kind of event.<br><br><span style="color:green;"><b>Good: 70-100%</b></span><br><span style="color:#c61618;"><b>Bad: 0-50%</b></span>',
+									text: 'Is calculated based on <i>Engagement rate</i> (opposite of bounce rate). Meaning, users who interacted with your site by visiting more than one page or triggered some kind of interaction event.<br><br><span style="color:green;"><b>Good: 70-100%</b></span><br><span style="color:#c61618;"><b>Bad: 0-50%</b></span>',
 									html: true
 								});
 							} else if (d.index === 1) {
 								swal({
 									title: 'Find products',
-									text: 'Finding rate, or how many users (out of the stay-on-site-users) who visited at least one product page.<br><br><span style="color:green;"><b>Good: 80-100%</b></span><br><span style="color:#c61618;"><b>Bad: 0-60%</b></span>',
+									text: 'Is calculated based on <i>Finding rate</i>. Meaning, how many users (out of the stay-on-site-users) who visited at least one product page.<br><br><span style="color:green;"><b>Good: 80-100%</b></span><br><span style="color:#c61618;"><b>Bad: 0-60%</b></span>',
 									html: true
 								});
 							} else if (d.index === 2) {
 								swal({
 									title: 'Add to cart',
-									text: 'Your product page effectiveness, or how many users (out of the find-product-users) who added an item to shopping cart.<br><br><span style="color:green;"><b>Good: 20-100%</b></span><br><span style="color:#c61618;"><b>Bad: 0-15%</b></span>',
+									text: 'Is calculated based on <i>Product page effectiveness rate</i>. Meaning, how many users (out of the find-products-users) who added an item to the shopping cart.<br><br><span style="color:green;"><b>Good: 20-100%</b></span><br><span style="color:#c61618;"><b>Bad: 0-15%</b></span>',
 									html: true
 								});
 							} else if (d.index === 3) {
 								swal({
 									title: 'Begin checkout',
-									text: 'Checkout rate, or how many users (out of the add-to-cart-users) who visited the checkout page.<br><br><span style="color:green;"><b>Good: 80-100%</b></span><br><span style="color:#c61618;"><b>Bad: 0-50%</b></span>',
+									text: 'Is calculated based on <i>Checkout rate</i>. Meaning, how many users (out of the add-to-cart-users) who proceeded to visit the checkout page.<br><br><span style="color:green;"><b>Good: 80-100%</b></span><br><span style="color:#c61618;"><b>Bad: 0-50%</b></span>',
 									html: true
 								});
 							} else if (d.index === 4) {
 								swal({
 									title: 'Complete checkout',
-									text: 'Checkout completion rate, or how many users (out of the begin-checkout-users) who completed the purchase.<br><br><span style="color:green;"><b>Good: 60-100%</b></span><br><span style="color:#c61618;"><b>Bad: 0-40%</b></span>',
+									text: 'Is calculated based on <i>Checkout completion rate</i>. Meaning, how many users (out of the begin-checkout-users) who completed their purchase.<br><br><span style="color:green;"><b>Good: 60-100%</b></span><br><span style="color:#c61618;"><b>Bad: 0-40%</b></span>',
 									html: true
 								});
 							}
