@@ -225,37 +225,63 @@ function apiResponse(viewId, startDate, endDate, deviceCategory, userType, compa
 	var ticker = loaderTick(2, 100, 150);
 
 	$.when(
-		queryShoppingStage(viewId, startDate, endDate, deviceCategory, userType, false),
-		queryShoppingStage(viewId, startDate, endDate, deviceCategory, userType, true)
+		queryShoppingStage(viewId, startDate, endDate, deviceCategory, userType),
+		queryUsers(viewId, startDate, endDate, deviceCategory, userType),
+		queryNonBounce(viewId, startDate, endDate, deviceCategory, userType)
 
-	).then(function(shoppingStageAllVisitsRes, shoppingStageNonBounceRes) {
+	).then(function(shoppingStageRes, usersRes, nonBounceRes) {
 
-		var shoppingStageNonBounceLength = 0;
+		var shoppingStageResult = 0;
 
-		if(shoppingStageNonBounceRes.result.reports[0].data.rows !== undefined){
-			shoppingStageNonBounceLength = shoppingStageNonBounceRes.result.reports[0].data.rows.length;
+		if(shoppingStageRes.result.reports[0].data.rows !== undefined){
+			shoppingStageResult = shoppingStageRes.result.reports[0].data.rows.length;
 		}
 
 		var trend = 0;
 
 		// Handle results from queryShoppingStage
 		// Loop through rows in the shoppingStage object
-		for (var i = 0; i < shoppingStageNonBounceLength; i++) {
+		for (var i = 0; i < shoppingStageResult; i++) {
 
-			console.log(shoppingStageNonBounceRes.result.reports[0].data.rows[i]);
+			console.log(shoppingStageRes.result.reports[0].data.rows[i]);
 
 			// Dimension name is inherited into the variable 'dimensionName'
-			var dimensionName = shoppingStageNonBounceRes.result.reports[0].data.rows[i].dimensions[0];
+			var dimensionName = shoppingStageRes.result.reports[0].data.rows[i].dimensions[0];
 
 			// Check if dimensionName is part of queryArray
 			if (jQuery.inArray(dimensionName, queryArray) >= 0) {
 
 				// If TRUE, add the value and name the object after the dimension name
-				queryObj[dimensionName] = shoppingStageNonBounceRes.result.reports[0].data.rows[i].metrics[0].values[0];
+				queryObj[dimensionName] = shoppingStageRes.result.reports[0].data.rows[i].metrics[0].values[0];
 			}
 		}
 
-		queryObj.USERS = shoppingStageAllVisitsRes.result.reports[0].data.rows[3].metrics[0].values[0];
+		queryObj.USERS = 0;
+
+		console.log('Users (bounce & non bounce)');
+		$.each(usersRes.result.reports[0].data.rows, function(key, value) {
+
+			queryObj.USERS += Number(value.metrics[0].values[0]);
+
+			var type = '';
+			if (key === 0) {
+				type = 'New users on desktop';
+			} else if (key === 1) {
+				type = 'New users on mobile';
+			} else if (key === 2) {
+				type = 'New users on tablet';
+			} else if (key === 3) {
+				type = 'Returning users on desktop';
+			} else if (key === 4) {
+				type = 'Returning users on mobile';
+			} else if (key === 5) {
+				type = 'Returning users on tablet';
+			}
+			console.log(type + ': ' + Number(value.metrics[0].values[0]));
+		});
+
+		console.log('Total users: ' + queryObj.USERS);
+		console.log('All visits: ' + queryObj.ALL_VISITS);
 
 		if (comparison) {
 
@@ -274,7 +300,32 @@ function apiResponse(viewId, startDate, endDate, deviceCategory, userType, compa
 		//queryObj['USERS'] = usersRes.result.reports[0].data.rows[0].metrics[0].values[0];
 
 		// handle result from queryNonBounce and push into query object
-		queryObj.NON_BOUNCE_USERS = shoppingStageNonBounceRes.result.reports[0].data.rows[3].metrics[0].values[0];
+		queryObj.NON_BOUNCE_USERS = 0;
+
+		console.log('Users (non bounce)');
+
+		// Loop through the rows based on the required dimensions
+		// (userType = new/returning, deviceCategory = mobile/tablet/desktop)
+		$.each(nonBounceRes.result.reports[0].data.rows, function(key, value) {
+
+			queryObj.NON_BOUNCE_USERS += Number(value.metrics[0].values[0]);
+
+			var type = '';
+			if (key === 0) {
+				type = 'New users on desktop';
+			} else if (key === 1) {
+				type = 'New users on mobile';
+			} else if (key === 2) {
+				type = 'New users on tablet';
+			} else if (key === 3) {
+				type = 'Returning users on desktop';
+			} else if (key === 4) {
+				type = 'Returning users on mobile';
+			} else if (key === 5) {
+				type = 'Returning users on tablet';
+			}
+			console.log(type + ': ' + Number(value.metrics[0].values[0]));
+		});
 
 		// Calculate engagement rate
 		var engagementRate = getPercent(queryObj.NON_BOUNCE_USERS, queryObj.USERS);
@@ -475,8 +526,8 @@ function apiResponse(viewId, startDate, endDate, deviceCategory, userType, compa
 	});
 }
 
-// API call for users with checkout event
-function queryShoppingStage(viewId, startDate, endDate, deviceCategory, userType, nonBounce) { // eslint-disable-line no-shadow
+// API call for all users
+function queryUsers(viewId, startDate, endDate, deviceCategory, userType) { // eslint-disable-line no-shadow
 
 	var deviceCategoryArray = [];
 
@@ -497,99 +548,210 @@ function queryShoppingStage(viewId, startDate, endDate, deviceCategory, userType
 		userTypeArray.push(userType);
 	}
 
-	var result = '';
+	var result = gapi.client.request({
+		path: '/v4/reports:batchGet',
+		root: 'https://analyticsreporting.googleapis.com/',
+		method: 'POST',
+		body: {
 
-	if (nonBounce) {
-		result = gapi.client.request({
-			path: '/v4/reports:batchGet',
-			root: 'https://analyticsreporting.googleapis.com/',
-			method: 'POST',
-			body: {
-				reportRequests: [{
-					dateRanges: [{
-						endDate: endDate,
-						startDate: startDate
-					}],
-					samplingLevel: 'LARGE',
-					metrics: [{
-						expression: 'ga:users'
-					}],
-					viewId: viewId,
-					dimensions: [{
-						name: 'ga:shoppingStage'
+			reportRequests: [{
+
+				viewId: viewId,
+				dateRanges: [{
+
+					startDate: startDate,
+					endDate: endDate
+				}],
+				samplingLevel: 'LARGE',
+				metrics: [{
+
+					expression: 'ga:users'
+						//expression: 'ga:newUsers'
+				}],
+				dimensions: [{
+					name: 'ga:userType'
+				}, {
+					name: 'ga:deviceCategory'
+				}],
+				dimensionFilterClauses: [{
+					operator: 'AND',
+					filters: [{
+						dimensionName: 'ga:userType',
+						operator: 'IN_LIST',
+						expressions: userTypeArray
 					}, {
-						name: 'ga:segment'
-					}],
-					dimensionFilterClauses: [{
-						operator: 'AND',
-						filters: [{
-							dimensionName: 'ga:userType',
-							operator: 'IN_LIST',
-							expressions: userTypeArray
-						}, {
-							dimensionName: 'ga:deviceCategory',
-							operator: 'IN_LIST',
-							expressions: deviceCategoryArray
-						}]
-					}],
-					segments: [{
-						dynamicSegment: {
-							name: 'non_bounces',
-							sessionSegment: {
-								segmentFilters: [{
-									simpleSegment: {
-										orFiltersForSegment: [{
-											segmentFilterClauses: [{
-												metricFilter: {
-													metricName: 'ga:bounces',
-													operator: 'EQUAL',
-													comparisonValue: '0'
-												}
-											}]
-										}]
-									}
-								}]
-							}
-						}
+						dimensionName: 'ga:deviceCategory',
+						operator: 'IN_LIST',
+						expressions: deviceCategoryArray
 					}]
 				}]
-			}
-		});
+			}]
+		}
+	});
+
+	return result;
+}
+
+// API call for non-bounce users
+function queryNonBounce(viewId, startDate, endDate, deviceCategory, userType) { // eslint-disable-line no-shadow
+
+	var deviceCategoryArray = [];
+
+	if (deviceCategory === 'all') {
+		deviceCategoryArray.push('desktop');
+		deviceCategoryArray.push('tablet');
+		deviceCategoryArray.push('mobile');
 	} else {
-		result = gapi.client.request({
-			path: '/v4/reports:batchGet',
-			root: 'https://analyticsreporting.googleapis.com/',
-			method: 'POST',
-			body: {
-				reportRequests: [{
-					dateRanges: [{
-						endDate: endDate,
-						startDate: startDate
-					}],
-					samplingLevel: 'LARGE',
-					metrics: [{
-						expression: 'ga:users'
-					}],
-					viewId: viewId,
-					dimensions: [{
-						name: 'ga:shoppingStage'
-					}],
-					dimensionFilterClauses: [{
-						operator: 'AND',
-						filters: [{
-							dimensionName: 'ga:userType',
-							operator: 'IN_LIST',
-							expressions: userTypeArray
-						}, {
-							dimensionName: 'ga:deviceCategory',
-							operator: 'IN_LIST',
-							expressions: deviceCategoryArray
-						}]
-					}]
-				}]
-			}
-		});
+		deviceCategoryArray.push(deviceCategory);
 	}
+
+	var userTypeArray = [];
+
+	if (userType === 'all') {
+		userTypeArray.push('New Visitor');
+		userTypeArray.push('Returning Visitor');
+	} else {
+		userTypeArray.push(userType);
+	}
+
+	var result = gapi.client.request({
+		path: '/v4/reports:batchGet',
+		root: 'https://analyticsreporting.googleapis.com/',
+		method: 'POST',
+		body: {
+			reportRequests: [{
+				dateRanges: [{
+					endDate: endDate,
+					startDate: startDate
+				}],
+				metrics: [{
+					expression: 'ga:users'
+				}],
+				samplingLevel: 'LARGE',
+				viewId: viewId,
+				dimensions: [{
+					name: 'ga:segment'
+				}, {
+					name: 'ga:userType'
+				}, {
+					name: 'ga:deviceCategory'
+				}],
+				dimensionFilterClauses: [{
+					operator: 'AND',
+					filters: [{
+						dimensionName: 'ga:userType',
+						operator: 'IN_LIST',
+						expressions: userTypeArray
+					}, {
+						dimensionName: 'ga:deviceCategory',
+						operator: 'IN_LIST',
+						expressions: deviceCategoryArray
+					}]
+				}],
+				segments: [{
+					dynamicSegment: {
+						name: 'non_bounces',
+						sessionSegment: {
+							segmentFilters: [{
+								simpleSegment: {
+									orFiltersForSegment: [{
+										segmentFilterClauses: [{
+											metricFilter: {
+												metricName: 'ga:bounces',
+												operator: 'EQUAL',
+												comparisonValue: '0'
+											}
+										}]
+									}]
+								}
+							}]
+						}
+					}
+				}]
+			}]
+		}
+	});
+
+	return result;
+}
+
+// API call for users with checkout event
+function queryShoppingStage(viewId, startDate, endDate, deviceCategory, userType) { // eslint-disable-line no-shadow
+
+	var deviceCategoryArray = [];
+
+	if (deviceCategory === 'all') {
+		deviceCategoryArray.push('desktop');
+		deviceCategoryArray.push('tablet');
+		deviceCategoryArray.push('mobile');
+	} else {
+		deviceCategoryArray.push(deviceCategory);
+	}
+
+	var userTypeArray = [];
+
+	if (userType === 'all') {
+		userTypeArray.push('New Visitor');
+		userTypeArray.push('Returning Visitor');
+	} else {
+		userTypeArray.push(userType);
+	}
+
+	var result = gapi.client.request({
+		path: '/v4/reports:batchGet',
+		root: 'https://analyticsreporting.googleapis.com/',
+		method: 'POST',
+		body: {
+			reportRequests: [{
+				dateRanges: [{
+					endDate: endDate,
+					startDate: startDate
+				}],
+				samplingLevel: 'LARGE',
+				metrics: [{
+					expression: 'ga:users'
+				}],
+				viewId: viewId,
+				dimensions: [{
+					name: 'ga:shoppingStage'
+				}, {
+					name: 'ga:segment'
+				}],
+				dimensionFilterClauses: [{
+					operator: 'AND',
+					filters: [{
+						dimensionName: 'ga:userType',
+						operator: 'IN_LIST',
+						expressions: userTypeArray
+					}, {
+						dimensionName: 'ga:deviceCategory',
+						operator: 'IN_LIST',
+						expressions: deviceCategoryArray
+					}]
+				}],
+				segments: [{
+					dynamicSegment: {
+						name: 'non_bounces',
+						sessionSegment: {
+							segmentFilters: [{
+								simpleSegment: {
+									orFiltersForSegment: [{
+										segmentFilterClauses: [{
+											metricFilter: {
+												metricName: 'ga:bounces',
+												operator: 'EQUAL',
+												comparisonValue: '0'
+											}
+										}]
+									}]
+								}
+							}]
+						}
+					}
+				}]
+			}]
+		}
+	});
 
 	return result;
 }
@@ -1039,11 +1201,6 @@ function loaderTick(startVal, stopVal, ms){
 			$('.pace-progress').attr('data-progress-text', newVal + '%').attr('style', 'transform: translate3d(' + newVal + '%, 0px, 0px);');
 
 			newVal++;
-
-			if (newVal >= 100) {
-				setProgressBar(100);
-				return false;
-			}
 		}
 
 	}, ms);
