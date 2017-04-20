@@ -12,7 +12,7 @@ if (ecomFunnel !== null) {
 	var propertyId = ecomFunnel.propertyId;
 	var viewId = ecomFunnel.viewId;
 
-	console.log(viewId);
+	//console.log(viewId);
 
 } else {
 
@@ -225,10 +225,28 @@ function apiResponse(viewId, startDate, endDate, deviceCategory, userType, compa
 	var ticker = loaderTick(2, 100, 150);
 
 	$.when(
+		// First with bounces and then without
 		queryShoppingStage(viewId, startDate, endDate, deviceCategory, userType, false),
 		queryShoppingStage(viewId, startDate, endDate, deviceCategory, userType, true)
 
 	).then(function(shoppingStageAllVisitsRes, shoppingStageNonBounceRes) {
+
+		var samplesReadCounts = false;
+		var samplingSpaceSizes = false;
+
+		if (typeof shoppingStageNonBounceRes.result.reports[0].data.samplesReadCounts !== 'undefined') {
+			samplesReadCounts = shoppingStageNonBounceRes.result.reports[0].data.samplesReadCounts[0];
+		}
+
+		if (typeof shoppingStageNonBounceRes.result.reports[0].data.samplingSpaceSizes !== 'undefined') {
+			samplingSpaceSizes = shoppingStageNonBounceRes.result.reports[0].data.samplingSpaceSizes[0];
+		}
+
+		if (samplesReadCounts && samplingSpaceSizes) {
+			console.log('samplad data!!!!!!');
+		}else{
+			console.log('pröpper datta!');
+		}
 
 		var shoppingStageNonBounceLength = 0;
 
@@ -242,8 +260,6 @@ function apiResponse(viewId, startDate, endDate, deviceCategory, userType, compa
 		// Loop through rows in the shoppingStage object
 		for (var i = 0; i < shoppingStageNonBounceLength; i++) {
 
-			console.log(shoppingStageNonBounceRes.result.reports[0].data.rows[i]);
-
 			// Dimension name is inherited into the variable 'dimensionName'
 			var dimensionName = shoppingStageNonBounceRes.result.reports[0].data.rows[i].dimensions[0];
 
@@ -253,6 +269,11 @@ function apiResponse(viewId, startDate, endDate, deviceCategory, userType, compa
 				// If TRUE, add the value and name the object after the dimension name
 				queryObj[dimensionName] = shoppingStageNonBounceRes.result.reports[0].data.rows[i].metrics[0].values[0];
 			}
+		}
+
+		if (shoppingStageAllVisitsRes.result.reports[0].data.rows[3] === undefined) {
+			checkIfNaN('bööös');
+			return false;
 		}
 
 		queryObj.USERS = shoppingStageAllVisitsRes.result.reports[0].data.rows[3].metrics[0].values[0];
@@ -283,8 +304,6 @@ function apiResponse(viewId, startDate, endDate, deviceCategory, userType, compa
 			return false;
 		}
 
-		console.log('Total non bounce users: ' + queryObj.NON_BOUNCE_USERS);
-
 		var engagementRateBenchmark = [0, 50, 71];
 
 		// If a comparison period is chosen, calculate diff (trend) and show table
@@ -305,8 +324,6 @@ function apiResponse(viewId, startDate, endDate, deviceCategory, userType, compa
 
 		// Calculate finding rate
 		var findRate = getPercent(queryObj.PRODUCT_VIEW, queryObj.NON_BOUNCE_USERS);
-
-		console.log(findRate);
 
 		if (checkIfNaN(findRate)) {
 			return false;
@@ -401,8 +418,6 @@ function apiResponse(viewId, startDate, endDate, deviceCategory, userType, compa
 				['Begin checkout', checkoutRate, setBenchmarkColor(checkoutRate, checkoutRateBenchmark)],
 				['Complete checkout', checkoutCompletionRate, setBenchmarkColor(checkoutCompletionRate, checkoutCompletionRateBenchmark)]
 			];
-
-			console.log(data);
 
 			var options = {
 				chart: {
@@ -1042,6 +1057,7 @@ function loaderTick(startVal, stopVal, ms){
 
 			if (newVal >= 100) {
 				setProgressBar(100);
+				hideLoader();
 				return false;
 			}
 		}
@@ -1050,4 +1066,3 @@ function loaderTick(startVal, stopVal, ms){
 
 	return loaderStatus;
 }
-
