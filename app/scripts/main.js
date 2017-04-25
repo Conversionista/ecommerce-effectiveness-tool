@@ -222,7 +222,7 @@ function apiResponse(viewId, startDate, endDate, deviceCategory, userType, compa
 	// set progress bar to 22 to show progress
 	// setProgressBar(22);
 
-	var ticker = loaderTick(2, 100, 150);
+	var ticker = loaderTick(2, 100, 300);
 
 	$.when(
 		// First with bounces and then without
@@ -230,6 +230,9 @@ function apiResponse(viewId, startDate, endDate, deviceCategory, userType, compa
 		queryShoppingStage(viewId, startDate, endDate, deviceCategory, userType, true)
 
 	).then(function(shoppingStageAllVisitsRes, shoppingStageNonBounceRes) {
+
+		console.log(shoppingStageAllVisitsRes);
+		console.log(shoppingStageNonBounceRes);
 
 		var samplesReadCounts = false;
 		var samplingSpaceSizes = false;
@@ -243,15 +246,21 @@ function apiResponse(viewId, startDate, endDate, deviceCategory, userType, compa
 		}
 
 		if (samplesReadCounts && samplingSpaceSizes) {
-			console.log('samplad data!!!!!!');
-		}else{
-			console.log('pröpper datta!');
+			// console.log('samplad datta!!!!!!');
+			$('#sampled-data-notification, #sample-star').removeClass('hidden');
+		} else {
+			// console.log('pröpper datta!');
+			$('#sampled-data-notification, #sample-star').addClass('hidden');
 		}
 
 		var shoppingStageNonBounceLength = 0;
 
 		if(shoppingStageNonBounceRes.result.reports[0].data.rows !== undefined){
 			shoppingStageNonBounceLength = shoppingStageNonBounceRes.result.reports[0].data.rows.length;
+		}
+		else {
+			checkIfNaN('bööös');
+			return false;
 		}
 
 		var trend = 0;
@@ -304,7 +313,7 @@ function apiResponse(viewId, startDate, endDate, deviceCategory, userType, compa
 			return false;
 		}
 
-		var engagementRateBenchmark = [0, 50, 71];
+		var engagementRateBenchmark = [0, 60, 71];
 
 		// If a comparison period is chosen, calculate diff (trend) and show table
 		if (comparison) {
@@ -329,7 +338,7 @@ function apiResponse(viewId, startDate, endDate, deviceCategory, userType, compa
 			return false;
 		}
 
-		var findRateBenchmark = [0, 60, 81];
+		var findRateBenchmark = [0, 50, 66];
 
 		if (comparison) {
 
@@ -351,7 +360,7 @@ function apiResponse(viewId, startDate, endDate, deviceCategory, userType, compa
 			return false;
 		}
 
-		var productPageEffectivenessRateBenchmark = [0, 15, 21];
+		var productPageEffectivenessRateBenchmark = [0, 10, 21];
 
 		if (comparison) {
 
@@ -369,7 +378,7 @@ function apiResponse(viewId, startDate, endDate, deviceCategory, userType, compa
 		// Calculate checkout rate
 		var checkoutRate = getPercent(queryObj.CHECKOUT, queryObj.ADD_TO_CART);
 
-		var checkoutRateBenchmark = [0, 60, 81];
+		var checkoutRateBenchmark = [0, 50, 81];
 
 		if (comparison) {
 
@@ -387,7 +396,7 @@ function apiResponse(viewId, startDate, endDate, deviceCategory, userType, compa
 		// Calculate checkout completion rate
 		var checkoutCompletionRate = getPercent(queryObj.TRANSACTION, queryObj.CHECKOUT);
 
-		var checkoutCompletionRateBenchmark = [0, 40, 61];
+		var checkoutCompletionRateBenchmark = [0, 50, 66];
 
 		if (comparison) {
 
@@ -448,31 +457,31 @@ function apiResponse(viewId, startDate, endDate, deviceCategory, userType, compa
 							if (d.index === 0) {
 								swal({
 									title: 'Stay on site',
-									text: 'Is calculated based on <i>Engagement rate</i> (opposite of bounce rate). Meaning, users who interacted with your site by visiting more than one page or triggered some kind of interaction event.<br><br><span style="color:#65B739;"><b>Good: 70-100%</b></span><br><span style="color:#ffc933;"><b>OK: 50-70%</b></span><br><span style="color:#c61618;"><b>Bad: 0-50%</b></span>',
+									text: 'Is calculated based on <i>Engagement rate</i> (opposite of bounce rate). Meaning, users who interacted with your site by visiting more than one page or triggered some kind of interaction event.<br><br><span style="color:#65B739;"><b>Good: 70-100%</b></span><br><span style="color:#ffc933;"><b>OK: 50-70%</b></span><br><span style="color:#c61618;"><b>Bad: 0-50%</b></span><p class="popup-info">(Average benchmark, all devices)</p>',
 									html: true
 								});
 							} else if (d.index === 1) {
 								swal({
 									title: 'Find products',
-									text: 'Is calculated based on <i>Finding rate</i>. Meaning, how many users (out of the stay-on-site-users) who visited at least one product page.<br><br><span style="color:#65B739;"><b>Good: 80-100%</b></span><br><span style="color:#ffc933;"><b>OK: 60-80%</b></span><br><span style="color:#c61618;"><b>Bad: 0-60%</b></span>',
+									text: 'Is calculated based on <i>Finding rate</i>. Meaning, how many users (out of the stay-on-site-users) who visited at least one product page.<br><br><span style="color:#65B739;"><b>Good: 80-100%</b></span><br><span style="color:#ffc933;"><b>OK: 60-80%</b></span><br><span style="color:#c61618;"><b>Bad: 0-60%</b></span><p class="popup-info">(Average benchmark, all devices)</p>',
 									html: true
 								});
 							} else if (d.index === 2) {
 								swal({
 									title: 'Add to cart',
-									text: 'Is calculated based on <i>Product page effectiveness rate</i>. Meaning, how many users (out of the find-products-users) who added an item to the shopping cart.<br><br><span style="color:#65B739;"><b>Good: 20-100%</b></span><br><span style="color:#ffc933;"><b>OK: 15-20%</b></span><br><span style="color:#c61618;"><b>Bad: 0-15%</b></span>',
+									text: 'Is calculated based on <i>Product page effectiveness rate</i>. Meaning, how many users (out of the find-products-users) who added an item to the shopping cart.<br><br><span style="color:#65B739;"><b>Good: 20-100%</b></span><br><span style="color:#ffc933;"><b>OK: 15-20%</b></span><br><span style="color:#c61618;"><b>Bad: 0-15%</b></span><p class="popup-info">(Average benchmark, all devices)</p>',
 									html: true
 								});
 							} else if (d.index === 3) {
 								swal({
 									title: 'Begin checkout',
-									text: 'Is calculated based on <i>Checkout rate</i>. Meaning, how many users (out of the add-to-cart-users) who proceeded to visit the checkout page.<br><br><span style="color:#65B739;"><b>Good: 80-100%</b></span><br><span style="color:#ffc933;"><b>OK: 60-80%</b></span><br><span style="color:#c61618;"><b>Bad: 0-60%</b></span>',
+									text: 'Is calculated based on <i>Checkout rate</i>. Meaning, how many users (out of the add-to-cart-users) who proceeded to visit the checkout page.<br><br><span style="color:#65B739;"><b>Good: 80-100%</b></span><br><span style="color:#ffc933;"><b>OK: 60-80%</b></span><br><span style="color:#c61618;"><b>Bad: 0-60%</b></span><p class="popup-info">(Average benchmark, all devices)</p>',
 									html: true
 								});
 							} else if (d.index === 4) {
 								swal({
 									title: 'Complete checkout',
-									text: 'Is calculated based on <i>Checkout completion rate</i>. Meaning, how many users (out of the begin-checkout-users) who completed their purchase.<br><br><span style="color:#65B739;"><b>Good: 60-100%</b></span><br><span style="color:#ffc933;"><b>OK: 40-60%</b></span><br><span style="color:#c61618;"><b>Bad: 0-40%</b></span>',
+									text: 'Is calculated based on <i>Checkout completion rate</i>. Meaning, how many users (out of the begin-checkout-users) who completed their purchase.<br><br><span style="color:#65B739;"><b>Good: 60-100%</b></span><br><span style="color:#ffc933;"><b>OK: 40-60%</b></span><br><span style="color:#c61618;"><b>Bad: 0-40%</b></span><p class="popup-info">(Average benchmark, all devices)</p>',
 									html: true
 								});
 							}
@@ -484,9 +493,19 @@ function apiResponse(viewId, startDate, endDate, deviceCategory, userType, compa
 			chart.draw(data, options);
 		}
 
-		clearInterval(ticker);
-		setProgressBar(100);
-		hideLoader();
+		if(comparisonStartDate !== 0) {
+			if (comparison) {
+				clearInterval(ticker);
+				setProgressBar(100);
+				hideLoader();
+			}
+
+		} else {
+			clearInterval(ticker);
+			setProgressBar(100);
+			hideLoader();
+		}
+
 	});
 }
 

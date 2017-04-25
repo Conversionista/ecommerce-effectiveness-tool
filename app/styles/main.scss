@@ -97,7 +97,12 @@ $icon-font-path: '../fonts/';
     background-color: #f8f8f8;
     border-radius: 4px;
     margin-bottom: 30px;
+}
 
+.popup-info {
+    font-size: 12px !important;
+    font-style: italic;
+    padding-top: 10px !important;
 }
 
 textarea {
