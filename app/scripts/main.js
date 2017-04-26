@@ -231,8 +231,8 @@ function apiResponse(viewId, startDate, endDate, deviceCategory, userType, compa
 
 	).then(function(shoppingStageAllVisitsRes, shoppingStageNonBounceRes) {
 
-		console.log(shoppingStageAllVisitsRes);
-		console.log(shoppingStageNonBounceRes);
+		// console.log(shoppingStageAllVisitsRes);
+		// console.log(shoppingStageNonBounceRes);
 
 		var samplesReadCounts = false;
 		var samplingSpaceSizes = false;
@@ -245,6 +245,7 @@ function apiResponse(viewId, startDate, endDate, deviceCategory, userType, compa
 			samplingSpaceSizes = shoppingStageNonBounceRes.result.reports[0].data.samplingSpaceSizes[0];
 		}
 
+		// Check if data is sampled
 		if (samplesReadCounts && samplingSpaceSizes) {
 			// console.log('samplad datta!!!!!!');
 			$('#sampled-data-notification, #sample-star').removeClass('hidden');
@@ -457,31 +458,31 @@ function apiResponse(viewId, startDate, endDate, deviceCategory, userType, compa
 							if (d.index === 0) {
 								swal({
 									title: 'Stay on site',
-									text: 'Is calculated based on <i>Engagement rate</i> (opposite of bounce rate). Meaning, users who interacted with your site by visiting more than one page or triggered some kind of interaction event.<br><br><span style="color:#65B739;"><b>Good: 70-100%</b></span><br><span style="color:#ffc933;"><b>OK: 50-70%</b></span><br><span style="color:#c61618;"><b>Bad: 0-50%</b></span><p class="popup-info">(Average benchmark, all devices)</p>',
+									text: 'Is calculated based on <i>Engagement rate</i> (opposite of bounce rate). Meaning, users who interacted with your site by visiting more than one page or triggered some kind of interaction event.<br><br><span style="color:#65B739;"><b>Good: 71-100%</b></span><br><span style="color:#ffc933;"><b>OK: 60-70%</b></span><br><span style="color:#c61618;"><b>Bad: 0-59%</b></span><p class="popup-info">(Average benchmark, all devices)</p>',
 									html: true
 								});
 							} else if (d.index === 1) {
 								swal({
 									title: 'Find products',
-									text: 'Is calculated based on <i>Finding rate</i>. Meaning, how many users (out of the stay-on-site-users) who visited at least one product page.<br><br><span style="color:#65B739;"><b>Good: 80-100%</b></span><br><span style="color:#ffc933;"><b>OK: 60-80%</b></span><br><span style="color:#c61618;"><b>Bad: 0-60%</b></span><p class="popup-info">(Average benchmark, all devices)</p>',
+									text: 'Is calculated based on <i>Finding rate</i>. Meaning, how many users (out of the stay-on-site-users) who visited at least one product page.<br><br><span style="color:#65B739;"><b>Good: 66-100%</b></span><br><span style="color:#ffc933;"><b>OK: 50-65%</b></span><br><span style="color:#c61618;"><b>Bad: 0-49%</b></span><p class="popup-info">(Average benchmark, all devices)</p>',
 									html: true
 								});
 							} else if (d.index === 2) {
 								swal({
 									title: 'Add to cart',
-									text: 'Is calculated based on <i>Product page effectiveness rate</i>. Meaning, how many users (out of the find-products-users) who added an item to the shopping cart.<br><br><span style="color:#65B739;"><b>Good: 20-100%</b></span><br><span style="color:#ffc933;"><b>OK: 15-20%</b></span><br><span style="color:#c61618;"><b>Bad: 0-15%</b></span><p class="popup-info">(Average benchmark, all devices)</p>',
+									text: 'Is calculated based on <i>Product page effectiveness rate</i>. Meaning, how many users (out of the find-products-users) who added an item to the shopping cart.<br><br><span style="color:#65B739;"><b>Good: 21-100%</b></span><br><span style="color:#ffc933;"><b>OK: 10-20%</b></span><br><span style="color:#c61618;"><b>Bad: 0-9%</b></span><p class="popup-info">(Average benchmark, all devices)</p>',
 									html: true
 								});
 							} else if (d.index === 3) {
 								swal({
 									title: 'Begin checkout',
-									text: 'Is calculated based on <i>Checkout rate</i>. Meaning, how many users (out of the add-to-cart-users) who proceeded to visit the checkout page.<br><br><span style="color:#65B739;"><b>Good: 80-100%</b></span><br><span style="color:#ffc933;"><b>OK: 60-80%</b></span><br><span style="color:#c61618;"><b>Bad: 0-60%</b></span><p class="popup-info">(Average benchmark, all devices)</p>',
+									text: 'Is calculated based on <i>Checkout rate</i>. Meaning, how many users (out of the add-to-cart-users) who proceeded to visit the checkout page.<br><br><span style="color:#65B739;"><b>Good: 81-100%</b></span><br><span style="color:#ffc933;"><b>OK: 50-80%</b></span><br><span style="color:#c61618;"><b>Bad: 0-49%</b></span><p class="popup-info">(Average benchmark, all devices)</p>',
 									html: true
 								});
 							} else if (d.index === 4) {
 								swal({
 									title: 'Complete checkout',
-									text: 'Is calculated based on <i>Checkout completion rate</i>. Meaning, how many users (out of the begin-checkout-users) who completed their purchase.<br><br><span style="color:#65B739;"><b>Good: 60-100%</b></span><br><span style="color:#ffc933;"><b>OK: 40-60%</b></span><br><span style="color:#c61618;"><b>Bad: 0-40%</b></span><p class="popup-info">(Average benchmark, all devices)</p>',
+									text: 'Is calculated based on <i>Checkout completion rate</i>. Meaning, how many users (out of the begin-checkout-users) who completed their purchase.<br><br><span style="color:#65B739;"><b>Good: 66-100%</b></span><br><span style="color:#ffc933;"><b>OK: 50-65%</b></span><br><span style="color:#c61618;"><b>Bad: 0-49%</b></span><p class="popup-info">(Average benchmark, all devices)</p>',
 									html: true
 								});
 							}
@@ -659,7 +660,7 @@ function authorize(event) {
 			showAuthDialog();
 		} else {
 			authButton.hidden = true;
-			console.log('inloggad');
+			// console.log('inloggad');
 			if(ecomFunnel === null) {
 				$('#modalSettings').modal('show');
 			}
@@ -705,7 +706,7 @@ function queryAccounts() {
 			var email = handleEmailResponse(resp);
 
 			sendUserData(name, email);
-			console.log('Retrieved profile for:' + name + ', ' + email);
+			// console.log('Retrieved profile for:' + name + ', ' + email);
 		});
 	});
 }
@@ -727,7 +728,7 @@ function handleEmailResponse(resp) {
 function sendUserData(name, email) {
 
 	if (typeof analytics !== 'undefined') {
-		console.log(name + '\n' + email);
+		// console.log(name + '\n' + email);
 		analytics.identify({
 			name: name,
 			email: email
